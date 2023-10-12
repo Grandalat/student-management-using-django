@@ -1,6 +1,7 @@
 from django import forms
 from django.forms.widgets import DateInput, TextInput
-
+import random
+from datetime import datetime
 from .models import *
 
 
@@ -55,14 +56,30 @@ class CustomUserForm(FormSettings):
         fields = ['first_name', 'last_name', 'email', 'gender',  'password','profile_pic', 'address' ]
 
 
+
 class StudentForm(CustomUserForm):
     def __init__(self, *args, **kwargs):
         super(StudentForm, self).__init__(*args, **kwargs)
 
     class Meta(CustomUserForm.Meta):
         model = Student
-        fields = CustomUserForm.Meta.fields + \
-            ['course', 'session']
+        fields = CustomUserForm.Meta.fields + ['course', 'session', 'matric_number']  # Add 'matric_number' here
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.instance.pk is None:  # only for new objects
+            matric_number = self.generate_matric_number()
+            self.cleaned_data['matric_number'] = matric_number
+            self.instance.matric_number = matric_number
+        return cleaned_data
+
+    def generate_matric_number(self):
+        current_year = datetime.now().year
+        random_number = random.randint(1000, 9999)  # generates a random number between 1000 and 9999
+        new_matric_number = 'MATRIC' + str(current_year) + str(random_number)
+        return new_matric_number
+
+
 
 
 class AdminForm(CustomUserForm):

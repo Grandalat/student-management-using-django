@@ -137,14 +137,16 @@ def student_feedback(request):
 
 def student_view_profile(request):
     student = get_object_or_404(Student, admin=request.user)
-    form = StudentEditForm(request.POST or None, request.FILES or None,
-                           instance=student)
-    context = {'form': form,
-               'page_title': 'View/Edit Profile'
-               }
+    form = StudentEditForm(request.POST or None, request.FILES or None, instance=student)
+    context = {
+        'form': form,
+        'page_title': 'View/Edit Profile',
+        'matric_number': student.matric_number  # Add this line
+    }
     if request.method == 'POST':
         try:
             if form.is_valid():
+                # Retrieve form data
                 first_name = form.cleaned_data.get('first_name')
                 last_name = form.cleaned_data.get('last_name')
                 password = form.cleaned_data.get('password') or None
@@ -152,9 +154,11 @@ def student_view_profile(request):
                 gender = form.cleaned_data.get('gender')
                 passport = request.FILES.get('profile_pic') or None
                 admin = student.admin
-                if password != None:
+
+                # Update admin user fields
+                if password is not None:
                     admin.set_password(password)
-                if passport != None:
+                if passport is not None:
                     fs = FileSystemStorage()
                     filename = fs.save(passport.name, passport)
                     passport_url = fs.url(filename)
@@ -164,15 +168,19 @@ def student_view_profile(request):
                 admin.address = address
                 admin.gender = gender
                 admin.save()
+
+                # Save the student and retrieve the matric number
                 student.save()
+
                 messages.success(request, "Profile Updated!")
                 return redirect(reverse('student_view_profile'))
             else:
                 messages.error(request, "Invalid Data Provided")
         except Exception as e:
-            messages.error(request, "Error Occured While Updating Profile " + str(e))
-
+            messages.error(request, "Error Occurred While Updating Profile: " + str(e))
+    
     return render(request, "student_template/student_view_profile.html", context)
+
 
 
 @csrf_exempt

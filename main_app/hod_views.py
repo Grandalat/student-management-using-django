@@ -73,7 +73,7 @@ def add_staff(request):
             messages.error(request, "Please fulfil all requirements")
 
     return render(request, 'hod_template/add_staff_template.html', context)
-
+    
 
 def add_student(request):
     student_form = StudentForm(request.POST or None, request.FILES or None)
@@ -92,6 +92,11 @@ def add_student(request):
             fs = FileSystemStorage()
             filename = fs.save(passport.name, passport)
             passport_url = fs.url(filename)
+
+            # Generate and save the matric number
+            matric_number = student_form.generate_matric_number()
+            student_form.instance.matric_number = matric_number
+
             try:
                 user = CustomUser.objects.create_user(
                     email=email, password=password, user_type=3, first_name=first_name, last_name=last_name, profile_pic=passport_url)
@@ -99,14 +104,21 @@ def add_student(request):
                 user.address = address
                 user.student.session = session
                 user.student.course = course
+                user.student.matric_number = matric_number  # Save the generated matric number
                 user.save()
                 messages.success(request, "Successfully Added")
                 return redirect(reverse('add_student'))
             except Exception as e:
                 messages.error(request, "Could Not Add: " + str(e))
         else:
-            messages.error(request, "Could Not Add: ")
+            messages.error(request, "Could Not Add: Form is not valid")
+    else:
+        # This is a GET request, generate a matric number for a new form
+        matric_number = student_form.generate_matric_number()
+        student_form.fields['matric_number'].initial = matric_number
+
     return render(request, 'hod_template/add_student_template.html', context)
+
 
 
 def add_course(request):

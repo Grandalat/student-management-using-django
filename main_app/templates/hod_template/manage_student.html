@@ -19,6 +19,7 @@
                                 <tr>
                                     <th>SN</th>
                                     <th>Full Name</th>
+                                    <th>Matric Number</th>
                                     <th>Email</th>
                                     <th>Gender</th>
                                     <th>Course</th>
@@ -31,6 +32,7 @@
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{student.last_name}}, {{student.first_name}}</td>
+                                    <td>{{ student.student.matric_number }}</td>
                                     <td>{{student.email}}</td>
                                     <td>{{student.gender}}</td>
                                     <td>{{student.student.course.name}}</td>
